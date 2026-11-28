@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Cookie Clicker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b1a2a">
@@ -10,11 +10,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Kavoon&display=swap" rel="stylesheet">
 <style>
 :root{--wd:linear-gradient(#8a5630,#5a3318 55%,#3f2210);--g:#7dff7d;--r:#ff5a4a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+html{height:100%;width:100%;position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;height:100%;background:#0b1a2a;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+body{margin:0;height:100%;width:100%;position:fixed;inset:0;overscroll-behavior:none;background:#0b1a2a;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
 .k{font-family:Kavoon,"Trebuchet MS",Georgia,serif}
-#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;background:radial-gradient(circle at 50% 35%,rgba(150,210,255,.35),transparent 60%),repeating-linear-gradient(90deg,#1d5f8c 0 38px,#236c9c 38px 76px,#1a577f 76px 110px)}
+#app{max-width:480px;margin:0 auto;height:100%;overflow:hidden;display:flex;flex-direction:column;position:relative;background:radial-gradient(circle at 50% 35%,rgba(150,210,255,.35),transparent 60%),repeating-linear-gradient(90deg,#1d5f8c 0 38px,#236c9c 38px 76px,#1a577f 76px 110px)}
 #top{position:relative;z-index:3;text-align:center;background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,0))}
 .news{overflow:hidden;white-space:nowrap;height:26px;line-height:26px;font-size:15px;text-shadow:0 1px 2px #000}
 .news span{display:inline-block;padding-left:100%;animation:tick 14s linear infinite}
@@ -35,7 +35,7 @@ body{margin:0;height:100%;background:#0b1a2a;color:#fff;font-family:Arial,Helvet
 #cookie svg{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
 .fl{position:absolute;pointer-events:none;font-size:22px;text-shadow:0 2px 3px #000;animation:up 1s ease-out forwards;z-index:5}
 @keyframes up{to{transform:translateY(-80px);opacity:0}}
-#list{flex:1;overflow-y:auto;background:repeating-linear-gradient(#7a7a7a 0 80px,#444 80px 82px)}
+#list{flex:1;overflow-y:auto;overscroll-behavior:contain;background:repeating-linear-gradient(#7a7a7a 0 80px,#444 80px 82px)}
 .row{height:82px;display:flex;align-items:center;gap:6px;padding:0 6px 0 0;background:linear-gradient(#8d8d8d,#6c6c6c);border-bottom:2px solid #444}
 .row.lk{background:linear-gradient(#6e6e6e,#555)}
 .ic{width:62px;text-align:center;font-size:40px;flex:none}
@@ -58,7 +58,7 @@ body{margin:0;height:100%;background:#0b1a2a;color:#fff;font-family:Arial,Helvet
 .bt.on{filter:brightness(1.5)}
 .pnl{margin:10px;padding:10px;border:2px solid #7ea3c4;background:rgba(10,30,50,.6);border-radius:4px;font-size:15px;line-height:1.4}
 .ttl{margin:12px auto 4px;padding:6px 28px;width:max-content;background:var(--wd);border:2px solid #2f1a0a;border-radius:6px;font-size:22px}
-.sp{overflow-y:auto}
+.sp{overflow-y:auto;overscroll-behavior:contain}
 #nav{display:flex;flex:none;background:linear-gradient(#9d9aa6,#5b5963 50%,#46444d);border-top:2px solid #d4d0de;padding:4px 0 6px}
 #nav button{flex:1;background:none;border:0;color:#c9c2dc;font-family:Kavoon,serif;font-size:15px;cursor:pointer;padding:2px 0;text-shadow:0 1px 2px #000}
 #nav button i{display:block;font-style:normal;font-size:30px;line-height:36px;filter:grayscale(.3)}
@@ -286,6 +286,20 @@ input[type=range]{display:block;width:100%;height:30px;margin:2px 0 0;accent-col
 /* heaven zoom buttons */
 #hvz{position:absolute;right:10px;top:10px;z-index:5;display:flex;flex-direction:column;gap:6px}
 #hvz .bt{width:42px;height:42px;padding:0;font-size:24px;line-height:1;border-color:#6a3fd0;background:linear-gradient(#3a2370,#150f33)}
+/* ===== performance ===== */
+/* drop-shadow on the big cookie was re-rasterized on every squash frame; the soft shadow under the ring already exists */
+#cookie svg,#cookie canvas,#cookie>img.ckm{filter:none!important}
+#cookie{will-change:transform;backface-visibility:hidden}
+#spin{will-change:transform}
+.cr{filter:none;will-change:transform,opacity}
+.fl{will-change:transform,opacity}
+/* full-screen brightness filter was costly: pulse opacity instead */
+@keyframes fzp{50%{opacity:.72}}
+#fall{position:absolute;inset:0;overflow:hidden}
+/* cookie rain = a few tiled images sliding down in a loop (compositor-only, no per-frame drawing) */
+.fy{position:absolute;left:0;right:0;top:calc(var(--tt)*-1);height:calc(100% + var(--tt));background-repeat:repeat-y;background-position:50% 0;opacity:0;will-change:transform;animation:fyscroll var(--du) linear infinite}
+@keyframes fyscroll{to{transform:translateY(var(--tt))}}
+.axing .fy{animation-play-state:paused}
 </style>
 </head>
 <body>
@@ -304,7 +318,7 @@ input[type=range]{display:block;width:100%;height:30px;margin:2px 0 0;accent-col
   <section class="view on" id="v-cookie">
     <div id="milkb"><svg class="wv w1" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 24Q150 14 300 24T600 24T900 24T1200 24V40H0Z"/></svg></div>
     <div id="milk"><svg class="wv w1" viewBox="0 0 1200 40" preserveAspectRatio="none"><path d="M0 24Q150 14 300 24T600 24T900 24T1200 24V40H0Z"/></svg></div>
-    <div id="bgk"></div><div id="mlk"></div>
+    <div id="bgk"><div id="fall"></div></div><div id="mlk"></div>
     <div id="dsc"></div><div id="dsb">🪩</div>
     <div id="ring">
       <div id="smoke"></div>
@@ -393,8 +407,15 @@ input[type=range]{display:block;width:100%;height:30px;margin:2px 0 0;accent-col
   <section class="view sp" id="v-misc">
     <div class="ttl k" id="opt">Options</div>
     <div class="pnl" style="display:flex;gap:8px"><button class="bt" id="sv" style="flex:1;height:44px">Save</button><button class="bt" id="rs" style="flex:1;height:44px">Reset game</button></div>
+    <div class="pnl"><b>Backup do save</b>
+      <div style="font-size:13px;margin:4px 0 6px">Exportar gera um código com seu progresso. Guarde (WhatsApp, notas...) e cole aqui depois para importar.</div>
+      <textarea id="bkt" rows="4" placeholder="O código do save aparece aqui. Para importar, cole o código aqui." style="width:100%;padding:8px;border-radius:6px;border:1px solid #7ea3c4;background:#0b1a2a;color:#fff;font-size:13px;resize:none;user-select:text;-webkit-user-select:text"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px"><button class="bt" id="bke" style="flex:1;height:44px">Exportar save</button><button class="bt" id="bki" style="flex:1;height:44px">Importar save</button></div>
+      <div id="bkm" style="font-size:13px;margin-top:6px;min-height:16px"></div>
+    </div>
     <div class="pnl"><button class="bt" id="mf" style="width:100%;height:44px">Choose background music</button><input type="file" id="mfi" accept="audio/*" style="display:none"><div style="font-size:13px;margin:6px 0">Pick an audio file from your phone. It is kept on this device only.</div><button class="bt" id="md" style="width:100%;height:38px">Use built-in music</button></div>
     <div class="pnl"><button class="bt" id="rn" style="width:100%;height:44px">Rename bakery</button></div>
+    <div class="pnl"><button class="bt" id="bmb" style="width:100%;height:44px"></button><div style="font-size:13px;margin:6px 0">Basic milk: the milk only follows the cookies you have baked. Plain milk fills up at 1,000 cookies. Chocolate milk takes its place at 200,000 cookies, and each of the 23 flavors appears at 10x more than the one before.</div></div>
     <div class="pnl" style="display:flex;gap:8px"><button class="bt" id="mu" style="flex:1;height:44px"></button><button class="bt" id="fx" style="flex:1;height:44px"></button></div>
     <div class="pnl"><b>Volume</b>
       <div class="vr"><span>Music</span><span id="vmv">100%</span></div><input type="range" id="vm" min="0" max="100" step="1" value="100">
@@ -596,6 +617,8 @@ var FZ_X=7,FZ_MS=77e3;
 function fzApply(){FZ_X=S.fx>0?S.fx:7;FZ_MS=(S.fd>0?S.fd:77)*1e3}
 function fzOn(){return (S.fz||0)>Date.now()}
 function cps(){return cps0()*pm3()*evC()*(fzOn()?FZ_X:1)}
+var cpsV=0,cpsT=-1e3;
+function cpsF(now){if(now===undefined)now=performance.now();if(now-cpsT>=100){cpsT=now;cpsV=cps()}return cpsV}
 function clk(){var m=1,cl=0,fl=0;U.forEach(function(u){if(u.t==="cursor"&&u.k<3&&S.up[u.id])m*=2;if(u.t==="click"&&S.up[u.id])cl++;if(u.t==="cf"&&S.up[u.id])fl+=u.v});return pm3()*evK()*(fzOn()?FZ_X:1)*(H().cm*(S.up.dbl?2:1)*hm()*hcx()*(1+.05*Math.min((S.lv&&S.lv.cursor)|0,H().ag))*m*((S.cb||1)+fl)*(S.gm||1)+cps0()*(.01*cl+H().cc))}
 function f(n){
   if(n<1e6)return Math.floor(n).toLocaleString("en-US");
@@ -615,8 +638,9 @@ function amount(b){
 }
 
 // save / load
-function save(){if(!document.hidden)S.ls=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-function load(){try{var d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d.c==="number"){S.c=d.c;S.t=d.t||0;S.k=d.k||0;S.lk=d.lk|0;S.gk=d.gk|0;S.fz=d.fz||0;S.gs=d.gs>0?d.gs:1;S.fx=d.fx>0?d.fx:0;S.fd=d.fd>0?d.fd:0;S.mt=(d.mt==null?null:d.mt|0);S.lv=d.lv||{};S.sl=d.sl|0;S.lu=d.lu?1:0;S.ln=d.ln||0;S.up=d.up||{};S.ach=d.ach||{};S.t0=d.t0||S.t0;S.mo=d.mo;S.so=d.so;S.cb=d.cb;S.gm=d.gm;S.pm=d.pm;S.bc=d.bc||{};S.nm=d.nm||"";S.pl=d.pl|0;S.hc=d.hc|0;S.hu=d.hu||{};hxd=true;S.ra=d.ra;S.rz=d.rz||0;S.rx=(d.rx&&d.rx.end>Date.now())?d.rx:null;S.ta=d.ta||0;S.n=d.n|0;S.hv=d.hv|0;S.ls=d.ls||0;S.ps=d.ps||0;S.pa=d.pa||0;S.pp=d.pp?1:0;S.mk=d.mk?1:0;S.vm=d.vm;S.vs=d.vs;S.ab=d.ab?1:0;S.dm=d.dm||null;S.hx2=d.hx2|0;if(!S.hx2){var rf=0;for(var hk in S.hu)if(OLDC[hk])rf+=OLDC[hk];S.hc+=rf;S.hu={};S.hx2=1}B.forEach(function(b){S.o[b.id]=(d.o&&d.o[b.id])|0})}}catch(e){}}
+var noSave=0;
+function save(){if(noSave)return;if(!document.hidden)S.ls=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d.c==="number"){S.c=d.c;S.t=d.t||0;S.k=d.k||0;S.lk=d.lk|0;S.gk=d.gk|0;S.fz=d.fz||0;S.gs=d.gs>0?d.gs:1;S.fx=d.fx>0?d.fx:0;S.fd=d.fd>0?d.fd:0;S.mt=(d.mt==null?null:d.mt|0);S.lv=d.lv||{};S.sl=d.sl|0;S.lu=d.lu?1:0;S.ln=d.ln||0;S.up=d.up||{};S.ach=d.ach||{};S.t0=d.t0||S.t0;S.mo=d.mo;S.bm=d.bm?1:0;S.so=d.so;S.cb=d.cb;S.gm=d.gm;S.pm=d.pm;S.bc=d.bc||{};S.nm=d.nm||"";S.pl=d.pl|0;S.hc=d.hc|0;S.hu=d.hu||{};hxd=true;S.ra=d.ra;S.rz=d.rz||0;S.rx=(d.rx&&d.rx.end>Date.now())?d.rx:null;S.ta=d.ta||0;S.n=d.n|0;S.hv=d.hv|0;S.ls=d.ls||0;S.ps=d.ps||0;S.pa=d.pa||0;S.pp=d.pp?1:0;S.mk=d.mk?1:0;S.vm=d.vm;S.vs=d.vs;S.ab=d.ab?1:0;S.dm=d.dm||null;S.hx2=d.hx2|0;if(!S.hx2){var rf=0;for(var hk in S.hu)if(OLDC[hk])rf+=OLDC[hk];S.hc+=rf;S.hu={};S.hx2=1}B.forEach(function(b){S.o[b.id]=(d.o&&d.o[b.id])|0})}}catch(e){}}
 
 // cursor ring around the cookie
 var ringN=-1;
@@ -685,7 +709,7 @@ function trade(b){
 function upd(){
   $("aq").style.display=(view==="cookie"&&pend()>=1)?"":"none";
   $("count").textContent=f(S.c)+W(Math.floor(S.c)===1?" cookie":" cookies");
-  $("cps").textContent="per second : "+fr(cps())+"/s";
+  $("cps").textContent="per second : "+fr(cpsF())+"/s";
   evUI();
   if(view!=="store")return;
   var lm=$("lmp");
@@ -760,13 +784,16 @@ document.querySelectorAll("[data-q]").forEach(function(b){b.onclick=function(){
   qty=b.dataset.q;document.querySelectorAll("[data-q]").forEach(function(x){x.classList.toggle("on",x===b)});upd()}});
 
 // click the big cookie
-var cv=$("v-cookie");
+var cv=$("v-cookie"),flN=0;
 $("cookie").addEventListener("pointerdown",function(e){
   snd.click();bounce();var v=clk();S.c+=v;S.t+=v;S.k++;S.lk=(S.lk|0)+1;
-  var s=document.createElement("span");s.className="fl k";s.textContent="+"+fr(v);
   var r=cv.getBoundingClientRect();
-  s.style.left=(e.clientX-r.left-10)+"px";s.style.top=(e.clientY-r.top-20)+"px";
-  cv.appendChild(s);setTimeout(function(){s.remove()},1000);crumb(e.clientX-r.left,e.clientY-r.top);
+  if(flN<14){
+    flN++;var s=document.createElement("span");s.className="fl k";s.textContent="+"+fr(v);
+    s.style.left=(e.clientX-r.left-10)+"px";s.style.top=(e.clientY-r.top-20)+"px";
+    cv.appendChild(s);setTimeout(function(){s.remove();flN--},1000);
+  }
+  crumb(e.clientX-r.left,e.clientY-r.top);
   upd();
 });
 
@@ -775,6 +802,28 @@ $("rs").onclick=function(){modal("Reset the game? All progress will be lost.",fa
   S.c=0;S.t=0;S.k=0;S.lk=0;S.lv={};S.sl=0;S.lu=0;S.ln=0;S.gk=0;S.fz=0;S.mt=0;ACN=0;S.up={};S.ach={};S.t0=Date.now();S.pl=0;S.hc=0;S.hu={};hxd=true;S.rx=null;S.rz=0;S.ta=0;S.n=0;S.hv=0;S.ab=0;abApply();$("hv").classList.remove("on");S.cb=1;S.gm=1;S.pm=1;S.bc={};S.nm="";S.ps=0;S.pa=0;S.mk=0;milkUI();
   B.forEach(function(b){S.o[b.id]=0});ringN=-1;ring();bk();save();upd();show("cookie");askName(true)})};
 $("rn").onclick=function(){askName(false)};
+(function(){
+  var t=$("bkt"),m=$("bkm");
+  function msg(x){m.textContent=x}
+  function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+  function dec(x){return JSON.parse(decodeURIComponent(escape(atob(x.replace(/\s+/g,"")))))}
+  $("bke").onclick=function(){
+    save();var c;
+    try{c=enc(S)}catch(e){msg("Erro ao gerar o código.");return}
+    t.value=c;t.focus();t.select();
+    var ok=function(){msg("Código copiado! Guarde em um lugar seguro.")};
+    var no=function(){try{document.execCommand("copy");ok()}catch(e){msg("Copie o código da caixa acima.")}};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(ok,no);else no();
+  };
+  $("bki").onclick=function(){
+    var v=t.value.trim();if(!v){msg("Cole o código do save na caixa.");return}
+    var d;try{d=dec(v)}catch(e){msg("Código inválido.");return}
+    if(!d||typeof d.c!=="number"){msg("Código inválido.");return}
+    modal("Importar este save? O progresso atual será substituído.",false,"","Importar",true,function(){
+      try{localStorage.setItem(KEY,JSON.stringify(d));noSave=1;location.reload()}catch(e){msg("Não foi possível importar.")}
+    });
+  };
+})();
 function modal(title,withInput,def,ok,cancelable,cb){
   var m=$("mod"),i=$("mi");$("mt").textContent=title;i.style.display=withInput?"":"none";i.value=def||"";
   $("my").textContent=ok||"OK";$("mn").style.display=cancelable?"":"none";m.style.display="flex";
@@ -817,15 +866,22 @@ var snd=(function(){
     if(ctx.state==="suspended")ctx.resume();
   }
   function on(){return ctx&&S.so!==false}
+  var nbuf={};
   function noise(t,len,fq,q,vol){
-    var n=Math.floor(ctx.sampleRate*len),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
-    for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.2);
+    var key=len+"|"+ctx.sampleRate,b=nbuf[key];
+    if(!b){
+      var n=Math.floor(ctx.sampleRate*len),d;b=ctx.createBuffer(1,n,ctx.sampleRate);d=b.getChannelData(0);
+      for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.2);
+      nbuf[key]=b;
+    }
     var s=ctx.createBufferSource(),fl=ctx.createBiquadFilter(),g=ctx.createGain();
     s.buffer=b;fl.type="bandpass";fl.frequency.value=fq;fl.Q.value=q;g.gain.value=vol;
     s.connect(fl);fl.connect(g);g.connect(sfx);s.start(t);
   }
+  var lastClk=0;
   function click(){
     start();if(!on())return;
+    var nw=performance.now();if(nw-lastClk<40)return;lastClk=nw;
     var t=ctx.currentTime,j=Math.random();
     noise(t,.012,3800+j*900,1.2,1);noise(t+.002,.03,1500+j*400,.8,.55);
     tone(170+j*30,t,.07,"sine",.35);tone(95,t,.09,"triangle",.25);
@@ -834,12 +890,13 @@ var snd=(function(){
   function up(){if(!on())return;var t=ctx.currentTime;[523,659,784,988].forEach(function(f,i){tone(f,t+i*.06,.25,"square",.12)})}
   function buy(){if(!on())return;var t=ctx.currentTime;tone(660,t,.12,"sine",.25);tone(880,t+.08,.18,"sine",.25)}
   function chime(){if(!on())return;var t=ctx.currentTime;[523,659,784,1046].forEach(function(f,i){tone(f,t+i*.09,.35,"triangle",.25)})}
-  function lab(){$("mu").textContent="Music: "+(S.mo!==false?"ON":"OFF");$("fx").textContent="Sounds: "+(S.so!==false?"ON":"OFF");
+  function lab(){$("bmb").textContent="Basic milk: "+(S.bm?"ON":"OFF");$("mu").textContent="Music: "+(S.mo!==false?"ON":"OFF");$("fx").textContent="Sounds: "+(S.so!==false?"ON":"OFF");
     $("vm").value=Math.round(vv("vm")*100);$("vs").value=Math.round(vv("vs")*100);$("vmv").textContent=$("vm").value+"%";$("vsv").textContent=$("vs").value+"%"}
   $("vm").oninput=function(){S.vm=this.value/100;$("vmv").textContent=this.value+"%";applyVol();if(window.cmVol)cmVol()};
   $("vs").oninput=function(){S.vs=this.value/100;$("vsv").textContent=this.value+"%";applyVol()};
   $("vm").onchange=function(){save()};
   $("vs").onchange=function(){save();start();buy()};
+  $("bmb").onclick=function(){S.bm=S.bm?0:1;lab();mkKey="";milkH();save()};
   $("mu").onclick=function(){S.mo=S.mo===false;lab();save();if(window.cmSync)cmSync()};
   $("fx").onclick=function(){S.so=S.so===false;lab();save()};
   document.addEventListener("pointerdown",start);
@@ -1059,7 +1116,7 @@ function lumpTick(){
 var alive=0;
 function crumb(x,y){
   var n=1+Math.floor(Math.random()*2);
-  for(var i=0;i<n&&alive<40;i++){
+  for(var i=0;i<n&&alive<16;i++){
     var c=document.createElement("img");c.src=window.ppOn?CKP:CKS;c.className="cr";alive++;
     var sz=22+Math.random()*14;
     c.style.cssText="left:"+(x-sz/2)+"px;top:"+(y-sz/2)+"px;width:"+sz+"px;height:"+sz+"px;--dx:"+((Math.random()-.5)*90)+"px;--rt:"+((Math.random()-.5)*540)+"deg;animation-duration:"+(.9+Math.random()*.5)+"s";
@@ -1068,26 +1125,13 @@ function crumb(x,y){
   }
 }
 
-// cookies rain from the sky wherever you tap the cookie screen
-var skAlive=0;
-function rain(n,cap){
-  var W=cv.clientWidth||360,Hh=(cv.clientHeight||640)+fxTH;
-  for(var i=0;i<n&&skAlive<cap;i++){
-    var c=document.createElement("img");c.src=window.ppOn?CKP:CKS;c.className="sk";skAlive++;
-    var sz=30+Math.random()*34,d=1.4+Math.random()*1.2;
-    c.style.cssText="top:-"+(fxTH+80)+"px;left:"+(Math.random()*(W-sz))+"px;width:"+sz+"px;height:"+sz+"px;--dx:"+((Math.random()-.5)*80)+"px;--dy:"+(Hh+120)+"px;--rt:"+((Math.random()-.5)*720)+"deg;animation-duration:"+d+"s;animation-delay:"+(Math.random()*.35)+"s";
-    cv.insertBefore(c,$("ring"));
-    (function(c){setTimeout(function(){c.remove();skAlive--},(d+.5)*1000)})(c);
-  }
-}
-cv.addEventListener("pointerdown",function(){rain(2+Math.floor(Math.random()*2),80)});
 // golden cookie frenzy: banner, vignette and a rain of cookies while it lasts
 function fzTick(){
   var on=fzOn();
   $("fzv").classList.toggle("on",on&&view==="cookie");
   var e=$("fz");e.style.display=on?"block":"none";
   if(on){var t=Math.ceil((S.fz-Date.now())/1000);e.textContent=W("\uD83C\uDF6A")+" FRENZY! Production x"+FZ_X+" \u00B7 "+Math.floor(t/60)+":"+("0"+t%60).slice(-2)+" left";
-    if(view==="cookie"&&!document.hidden)rain(1+Math.floor(Math.random()*3),130)}
+  }
 }
 
 // custom background music from a file the player chooses (kept in IndexedDB)
@@ -1131,13 +1175,13 @@ var HU=[
  {"id":"cher","n":"Cherubim","c":16807,"x":1222,"y":922,"r":"dom","i":"🛡️","d":"You gain another +10% of your regular CpS while the game is closed, for a total of 55%.","q":"Sieging at the first sphere of pastry heaven, the four-faced cherubim serve as heavenly bouncers and bodyguards.","or":0.1},
  {"id":"ser","n":"Seraphim","c":117649,"x":1300,"y":940,"r":"cher","i":"🔥","d":"You gain another +10% of your regular CpS while the game is closed, for a total of 65%.","q":"Leading the first sphere of pastry heaven, seraphim possess ultimate knowledge of everything pertaining to baking.","or":0.1},
  {"id":"god","n":"God","c":823543,"x":1369,"y":979,"r":"ser","i":"🙏","d":"You gain another +10% of your regular CpS while the game is closed, for a total of 75%.","q":"Like Santa, but less fun.","or":0.1},
- {"id":"bel","n":"Belphegor","c":7,"x":837,"y":902,"r":"tg","i":"😴","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 2 hours.","q":"A demon of shortcuts and laziness, Belphegor commands machines to do work in his stead.","ot":1},
- {"id":"mam","n":"Mammon","c":49,"x":886,"y":838,"r":"bel","i":"💰","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 4 hours.","q":"The demonic embodiment of wealth, Mammon requests a tithe of blood and gold from all his worshippers.","ot":1},
- {"id":"aba","n":"Abaddon","c":343,"x":916,"y":765,"r":"mam","i":"🪲","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 8 hours.","q":"Master of overindulgence, Abaddon governs the wrinkler brood and inspires their insatiability.","ot":1},
- {"id":"sat","n":"Satan","c":2401,"x":928,"y":684,"r":"aba","i":"😈","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 16 hours.","q":"The counterpoint to everything righteous, this demon represents the nefarious influence of deceit and temptation.","ot":1},
- {"id":"asm","n":"Asmodeus","c":16807,"x":930,"y":602,"r":"sat","i":"👹","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 1 day and 8 hours.","q":"This demon with three monstrous heads draws his power from the all-consuming desire for cookies and all things sweet.","ot":1},
- {"id":"bee","n":"Beelzebub","c":117649,"x":930,"y":519,"r":"asm","i":"🪰","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 2 days and 16 hours.","q":"The festering incarnation of blight and disease, Beelzebub rules over the vast armies of pastry inferno.","ot":1},
- {"id":"luc","n":"Lucifer","c":823543,"x":919,"y":436,"r":"bee","i":"🌅","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 5 days and 8 hours.","q":"Also known as the Lightbringer, this infernal prince's tremendous ego caused him to be cast down from pastry heaven.","ot":1},
+ {"id":"bel","n":"Night Owl","c":7,"x":837,"y":902,"r":"tg","i":"🦉","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 2 hours.","q":"A night owl never sleeps on the job, so the ovens keep humming long after you log off.","ot":1},
+ {"id":"mam","n":"Moonlit Oven","c":49,"x":886,"y":838,"r":"bel","i":"🌙","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 4 hours.","q":"Baking by moonlight, this enchanted oven turns out batch after batch while the world sleeps.","ot":1},
+ {"id":"aba","n":"Sandman","c":343,"x":916,"y":765,"r":"mam","i":"💤","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 8 hours.","q":"Sprinkling dream dust over the bakery, the Sandman keeps every cookie rising through the night.","ot":1},
+ {"id":"sat","n":"Dream Baker","c":2401,"x":928,"y":684,"r":"aba","i":"☁️","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 16 hours.","q":"Kneading dough in the clouds, the Dream Baker bakes cookies you haven't even imagined yet.","ot":1},
+ {"id":"asm","n":"Time Wizard","c":16807,"x":930,"y":602,"r":"sat","i":"🧙","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 1 day and 8 hours.","q":"With a flick of his wand, this wizard stretches an afternoon into a whole weekend of baking.","ot":1},
+ {"id":"bee","n":"Cosmic Clock","c":117649,"x":930,"y":519,"r":"asm","i":"🕰️","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 2 days and 16 hours.","q":"Its gears turn slower than the stars, giving your bakery far more time than the rest of the world.","ot":1},
+ {"id":"luc","n":"Eternal Dawn","c":823543,"x":919,"y":436,"r":"bee","i":"🌅","d":"You retain optimal cookie production while the game is closed for twice as long, for a total of 5 days and 8 hours.","q":"The sun never quite sets over this bakery, and the cookies never stop coming.","ot":1},
  {"id":"kang","n":"Kitten angels","c":9000,"x":1156,"y":860,"r":"dom","i":"🐱","d":"You gain more CpS the more milk you have.","q":"All cats go to heaven.","kt":1},
  {"id":"kwag","n":"Kitten wages","c":9000000000,"x":1232,"y":858,"r":"kang","i":"🐈","d":"Through clever accounting, this actually makes kitten upgrades 10% cheaper.","q":"Cats can have little a salary.","kw":0.9},
  {"id":"ffd","n":"Five-finger discount","c":555555,"x":723,"y":1433,"r":"halo","i":"🖐️","d":"All upgrades are 1% cheaper per 100 cursors.","q":"Stick it to the man.","rq":["halo","aba"]}
@@ -1720,18 +1764,23 @@ function milkPaint(el,fl,off){
   el.style.boxShadow="inset 0 3px 8px rgba(255,255,255,.28)";
 }
 var mkKey="";
+// basic milk: plain fills at 1,000 cookies; chocolate appears at 200,000 (mkQ(1)), then x10 for each next flavor
+function mkQ(i){return 2e5*Math.pow(10,i-1)}
 function milkH(){
-  var d=mkD(),pc=mkPct(),p=pc/mkCyc(),ty=mkFI(),fr=Math.min(1,Math.max(0,p)),m=$("milk"),b=$("milkb"),sy=!!H().sy;
-  var h=d.h!=null?Math.min(100,d.h):8+45*fr;if(Math.abs(h-mh)>.15){mh=h;m.style.height=h+"%"}
-  var key=pc+"|"+ty+"|"+sy+"|"+(window.ppOn?1:0)+"|"+(d.x?1:0)+"|"+(d.col?d.col.join():"");
+  var d=mkD(),pc=mkPct(),p=pc/mkCyc(),ty=mkFI(),fr=Math.min(1,Math.max(0,p)),m=$("milk"),b=$("milkb"),sy=!!H().sy,bm=!!S.bm;
+  if(bm){var cb=Math.max(1,S.t+(S.ta||0));ty=0;while(ty<22&&cb>=mkQ(ty+1))ty++;
+    // plain milk fills up at 1,000 cookies; the next flavors appear at mkQ(1), mkQ(2), ...
+    fr=ty===0?Math.min(1,Math.log(cb)/Math.log(1e3)):(ty>=22?1:Math.min(1,Math.log(cb/mkQ(ty))/Math.log(mkQ(ty+1)/mkQ(ty))));pc=Math.floor(fr*100)}
+  var h=(d.h!=null&&!bm)?Math.min(100,d.h):(bm&&ty>0?53:8+45*(bm?Math.min(1,Math.log(Math.max(1,S.t+(S.ta||0)))/Math.log(1e3)):fr));if(Math.abs(h-mh)>.15){mh=h;m.style.height=h+"%"}
+  var key=pc+"|"+ty+"|"+sy+"|"+bm+"|"+(window.ppOn?1:0)+"|"+(d.x?1:0)+"|"+(d.col?d.col.join():"");
   if(key===mkKey)return;mkKey=key;
   m.classList.remove("ch");
   m.style.display=d.x?"none":"";
-  var fl=mkFl();
+  var fl=bm?MF[ty%MF.length]:mkFl();
   milkPaint(m,fl,sy||(!d.col&&window.ppOn&&ty===0));
   var showB=false; // milk stays full once you pass 100%; only its flavor changes
   b.style.display=showB?"":"none";
-  if(showB)milkPaint(b,MF[(ty-1)%MF.length],false);
+  if(showB)milkPaint(b,MF[(ty-1)%MF.length],sy);
   $("mlk").textContent="Milk: "+Math.round(pc)+"% \u00b7 "+fl[0];
 }
 function milkUI(){
@@ -1747,40 +1796,86 @@ function milkUI(){
 // ===== Little cookies twinkling in the background: more cookies per second = more of them =====
 var bgs=[],fxTH=0;
 function fxSync(){var t=cv.offsetTop;if(t!==fxTH){fxTH=t;cv.style.setProperty("--th",t+"px")}}
-function bgTarget(){var L=Math.log10(1+Math.max(S.t,0));return Math.round(3*Math.pow(Math.max(0,L-2.5),1.3)+Math.min(4,Math.max(0,2*(L-1))))}
-function bgPlace(e){var z=parseFloat(e.style.width)||50;e.style.left="calc((100% - "+z+"px)*"+Math.random()+")";e.style.top="calc((100% - "+z+"px)*"+Math.random()+")";e.style.setProperty("--r",(Math.random()*60-30)+"deg")}
-function bgUpd(){
-  fxSync();var n=bgTarget(),h=$("bgk");
-  while(bgs.length<n){
-    var e=document.createElement("img"),z=44+Math.random()*44,d=1.2+Math.random()*1.4;
-    e.className="bgk";e.src=window.ppOn?CKP:CKS;e.style.width=e.style.height=z+"px";
-    e.style.animationDuration=d+"s";e.style.animationDelay=(-Math.random()*d)+"s";
-    bgPlace(e);e.addEventListener("animationiteration",function(){bgPlace(this)});
-    h.appendChild(e);bgs.push(e);
+// falling cookies = a looping IMAGE: each layer is one pre-drawn tile (a seamless picture of cookies)
+// that slides down forever with a CSS animation. The more cookies in the bank, the more layers fade in.
+var FL=[
+  {w:480,h:640,n:10,z0:22,z1:32,a0:1,a1:1,du:7.5,lo:0,sp:8},
+  {w:480,h:560,n:9,z0:28,z1:42,a0:1,a1:1,du:5.2,lo:8,sp:14},
+  {w:480,h:720,n:8,z0:36,z1:56,a0:1,a1:1,du:4.4,lo:22,sp:20}
+],fallBox=$("fall"),fallSp={},fallKind="",fallOp=[],fallT=0,fallEls=FL.map(function(L){
+  var e=document.createElement("div");e.className="fy";
+  e.style.setProperty("--tt",L.h+"px");e.style.setProperty("--du",L.du+"s");
+  e.style.backgroundSize=L.w+"px "+L.h+"px";
+  fallBox.appendChild(e);return e});
+function fallSprite(){
+  var k=window.ppOn?"p":"s";
+  if(fallSp[k]!==undefined)return fallSp[k];
+  fallSp[k]=null;
+  var im=new Image();
+  im.onload=function(){var c=document.createElement("canvas");c.width=c.height=256;c.getContext("2d").drawImage(im,0,0,256,256);fallSp[k]=c;bgUpd()};
+  im.src=k==="p"?CKP:CKS;
+  return null;
+}
+function fallTarget(){
+  var L=Math.log10(1+Math.max(S.c,0)),n=Math.round(1.6*Math.pow(L,1.6))||0,fz=fzOn();
+  if(fz)n=Math.round(n*1.8)+10;
+  return Math.min(n,fz?90:60);
+}
+// draw ONE seamless tile (cookies that cross the top/bottom edge are also drawn on the opposite side)
+function fallTile(sp,L){
+  var d=Math.min(window.devicePixelRatio||1,2),c=document.createElement("canvas"),x=c.getContext("2d"),i,j,t,xs=[];
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality="high";
+  c.width=Math.round(L.w*d);c.height=Math.round(L.h*d);
+  for(i=0;i<L.n;i++)xs.push((i+Math.random())/L.n*L.w);
+  for(i=xs.length-1;i>0;i--){j=Math.floor(Math.random()*(i+1));t=xs[i];xs[i]=xs[j];xs[j]=t}
+  for(i=0;i<L.n;i++){
+    var z=L.z0+Math.random()*(L.z1-L.z0),px=xs[i],py=(i+Math.random())/L.n*L.h,r=Math.random()*6.28,
+        cs=Math.cos(r)*d,sn=Math.sin(r)*d,h=z/2;
+    x.globalAlpha=L.a0+Math.random()*(L.a1-L.a0);
+    [0,-L.h,L.h].forEach(function(o){
+      var yy=py+o;if(yy<-z||yy>L.h+z)return;
+      x.setTransform(cs,sn,-sn,cs,px*d,yy*d);x.drawImage(sp,-h,-h,z,z);
+    });
   }
-  while(bgs.length>n)bgs.pop().remove();
+  return c.toDataURL("image/png");
+}
+function fallApply(){
+  var sp=fallSprite(),k=window.ppOn?"p":"s",n=fallT;
+  if(sp&&fallKind!==k){
+    fallKind=k;
+    FL.forEach(function(L,i){fallEls[i].style.backgroundImage="url("+fallTile(sp,L)+")"});
+  }
+  if(!fallKind)return;
+  FL.forEach(function(L,i){
+    var o=n>L.lo?1:0;
+    if(fallOp[i]!==o){fallOp[i]=o;fallEls[i].style.opacity=o}
+  });
+}
+function bgUpd(){
+  fxSync();fallT=fallTarget();fallApply();
 }
 
 // news ticker: pick a new line each time it finishes scrolling
 $("news").addEventListener("animationiteration",function(){this.textContent=W(NEWS[Math.floor(Math.random()*NEWS.length)])});
 
 // game loop (real elapsed time, so production never drifts)
-var last=performance.now(),acc=0;
+var last=performance.now(),acc=0,ctT=0,chkN=0,ckV=0,ckT=-1e3;
+function clkF(now){if(now-ckT>=100){ckT=now;ckV=clk()}return ckV}
 function loop(now){
   var dt=Math.min((now-last)/1000,1);last=now;bstep(now);
-  var g=cps()*dt,ac=H().ac;
-  if(ac>0)g+=clk()*ac*dt;
+  var g=cpsF(now)*dt,ac=H().ac;
+  if(ac>0)g+=clkF(now)*ac*dt;
   if(g>0){S.c+=g;S.t+=g}
   acc+=dt;
-  if(acc>=.1){acc=0;fzTick();lumpTick();evTick();bgUpd();milkH();upd();checkA();if(view==="stats")stats();if(view==="special"){legacyUI();seasonUI()}}
-  else $("count").textContent=f(S.c)+W(Math.floor(S.c)===1?" cookie":" cookies");
+  if(acc>=.1){acc=0;fzTick();lumpTick();evTick();bgUpd();milkH();upd();if(++chkN>=5){chkN=0;checkA()}if(view==="stats")stats();if(view==="special"){legacyUI();seasonUI()}}
+  else if(now-ctT>=50){ctT=now;$("count").textContent=f(S.c)+W(Math.floor(S.c)===1?" cookie":" cookies")}
   requestAnimationFrame(loop);
 }
 
 // ===== White smoke behind the cookie =====
 (function(){
   var h="";
-  for(var i=0;i<14;i++){
+  for(var i=0;i<9;i++){
     var z=110+Math.random()*110,d=6+Math.random()*6;
     h+='<i style="left:'+(8+Math.random()*84)+'%;top:'+(38+Math.random()*50)+'%;width:'+z.toFixed(0)+'px;height:'+z.toFixed(0)+'px;margin:-'+(z/2).toFixed(0)+'px 0 0 -'+(z/2).toFixed(0)+'px;--d:'+d.toFixed(1)+'s;--dl:-'+(Math.random()*d).toFixed(1)+'s;--dx:'+((Math.random()-.5)*90).toFixed(0)+'px;--r:'+((Math.random()-.5)*80).toFixed(0)+'deg"></i>';
   }
@@ -1852,6 +1947,32 @@ load();fzApply();abApply();catchUp();applyTheme();milkUI();away();evTick();bgUpd
 setInterval(save,10000);
 window.addEventListener("beforeunload",save);
 requestAnimationFrame(loop);
+})();
+</script>
+<script>
+// trava a página: não deixa arrastar/dar zoom pra fora da tela do jogo
+(function(){
+  function canScroll(el){
+    while(el&&el!==document.body&&el!==document.documentElement){
+      var cs=getComputedStyle(el),oy=cs.overflowY;
+      if((oy==="auto"||oy==="scroll")&&el.scrollHeight>el.clientHeight+1)return true;
+      el=el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener("touchmove",function(e){
+    if(e.touches.length>1){e.preventDefault();return}
+    if(/^(TEXTAREA|INPUT)$/.test(e.target.tagName))return;
+    if(!canScroll(e.target))e.preventDefault();
+  },{passive:false});
+  ["gesturestart","gesturechange","gestureend"].forEach(function(n){
+    document.addEventListener(n,function(e){e.preventDefault()});
+  });
+  function reset(){if(window.scrollX||window.scrollY)window.scrollTo(0,0);
+    document.documentElement.scrollLeft=0;document.body.scrollLeft=0}
+  window.addEventListener("scroll",reset,{passive:true});
+  if(window.visualViewport)window.visualViewport.addEventListener("scroll",reset);
+  window.addEventListener("resize",reset);
 })();
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>
