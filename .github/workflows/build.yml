@@ -31,6 +31,8 @@ jobs:
             cp icon-512.png "$d/ic_launcher_round.png"
           done
       - run: npx cap sync android
+      - name: Usar chave de assinatura fixa
+        run: mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
       - name: Compilar APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - name: Publicar APK na aba Releases
@@ -54,3 +56,4 @@ jobs:
           path: www
       - id: deploy
         uses: actions/deploy-pages@v4
+
